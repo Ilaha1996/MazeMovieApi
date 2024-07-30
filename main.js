@@ -2,27 +2,40 @@ const mazeAPI = "https://api.tvmaze.com/shows";
 let movieDiv = document.getElementById("MovieDiv");
 let searchInput = document.getElementById("searchInput");
 let searchForm = document.getElementById("searchForm");
-let genreSelect = document.getElementById("GenreSelect")
+let genreSelect = document.getElementById("GenreSelect");
+let IMDBSelect = document.getElementById("IMDBSelect");
 let movies = [];
 let allGenres =[];
+let allRatings =[];
 
 fetch(mazeAPI)
     .then(response => response.json())
     .then(data => {
             movies = data;
+            DisplayMovies(movies);
 
             movies.forEach(movie => {
                 movie.genres.forEach(genre => {
                 allGenres.push(genre);
-                    })
                 })
+            });
             
                 let uniqueGenres = allGenres.filter((value, index,array) => array.indexOf(value) ===index).sort();
 
-                CreateOptions(uniqueGenres);              
+                CreateOptions(uniqueGenres);    
                 
-                 DisplayMovies(movies);
-                });   
+                movies.forEach(movie => {
+                    if (movie.rating.average) {
+                        allRatings.push(movie.rating.average);
+                    }
+                });
+                
+                let uniqueRatings = allRatings.filter((value, index, array) => array.indexOf(value) === index).sort();
+                   
+                CreateRatingOptions(uniqueRatings);   
+                
+                 
+    });   
 
     
     function CreateOptions(options){
@@ -31,8 +44,17 @@ fetch(mazeAPI)
             option.value = uniqueGenre;
             option.innerText = uniqueGenre;
             genreSelect.appendChild(option);
-        })
+        })      
 
+    };
+
+    function CreateRatingOptions(options) {
+        options.forEach(uniqueRating => {
+            let option = document.createElement("option");
+            option.value = uniqueRating;
+            option.innerText = uniqueRating;
+            IMDBSelect.appendChild(option);  
+        });
     }
 
     genreSelect.addEventListener("change", function(){
@@ -46,9 +68,18 @@ fetch(mazeAPI)
             DisplayMovies(movies);
         }
 
-    })
+    });
 
-        searchForm.addEventListener("submit", function(e){
+    IMDBSelect.addEventListener("change", function () {
+        if (IMDBSelect.value != "") {
+            let filteredByIMDB = movies.filter(movie => movie.rating.average == IMDBSelect.value);
+            DisplayMovies(filteredByIMDB);
+        } else {
+            DisplayMovies(movies);
+        }
+    });
+
+    searchForm.addEventListener("submit", function(e){
             e.preventDefault();
 
             let movieName = searchInput.value.toLowerCase();
@@ -59,7 +90,7 @@ fetch(mazeAPI)
 
 
 
-        })
+    });
 
 
     function DisplayMovies(movies){
@@ -88,4 +119,4 @@ fetch(mazeAPI)
 
 
         });
-    }
+    };
